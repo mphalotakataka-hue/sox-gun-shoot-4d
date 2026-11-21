@@ -2,28 +2,47 @@
 name: Export SOX GUN SHOOT
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   export:
     runs-on: ubuntu-latest
     container:
       image: barichello/godot-ci:4.3
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Extract game ZIP
+        run: |
+          unzip -q SOX_GUN_SHOOT_4D_STYLE_UPGRADE.zip -d .
+          test -f zoma_gun_shoot/project.godot
+          test -f zoma_gun_shoot/export_presets.cfg
+
+      - name: Prepare folders
+        run: |
+          chmod -R u+rwX zoma_gun_shoot
+          mkdir -p zoma_gun_shoot/.godot/editor
+          mkdir -p zoma_gun_shoot/build/web
+
+      - name: Import project
+        run: |
+          godot --headless --editor \
+            --path zoma_gun_shoot --import
+
       - name: Export Web
         run: |
-          mkdir -p build/web
-          godot --headless --path . --export-release "Web" build/web/index.html
+          godot --headless \
+            --path zoma_gun_shoot \
+            --export-release "Web" \
+            zoma_gun_shoot/build/web/index.html
 
       - name: Upload Web Build
         uses: actions/upload-artifact@v4
         with:
           name: sox-gun-shoot-web
-          path: build/web/
-          
+          path: zoma_gun_shoot/build/web/
