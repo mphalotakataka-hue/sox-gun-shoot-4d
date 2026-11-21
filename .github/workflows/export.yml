@@ -1,0 +1,29 @@
+
+name: Export SOX GUN SHOOT
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Export Web
+        run: |
+          mkdir -p build/web
+          godot --headless --path . --export-release "Web" build/web/index.html
+
+      - name: Upload Web Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: sox-gun-shoot-web
+          path: build/web/
+          
